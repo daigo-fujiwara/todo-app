@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO アプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-group input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            min-height: 60px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .todo-list {
+            list-style: none;
+        }
+
+        .todo-item {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .todo-item:hover {
+            background: #f0f0f0;
+            transform: translateX(5px);
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+            border-left-color: #90ee90;
+        }
+
+        .todo-content {
+            flex: 1;
+        }
+
+        .todo-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .todo-item.completed .todo-title {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .todo-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .todo-date {
+            color: #999;
+            font-size: 0.8em;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: 10px;
+        }
+
+        .todo-actions button {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border-radius: 3px;
+        }
+
+        .btn-complete {
+            background: #4CAF50;
+        }
+
+        .btn-complete:hover {
+            background: #45a049;
+        }
+
+        .btn-delete {
+            background: #f44336;
+        }
+
+        .btn-delete:hover {
+            background: #da190b;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 1.1em;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .todo-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .todo-actions {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 TODO アプリ</h1>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div class="input-group">
+            <input type="text" id="titleInput" placeholder="TODO を入力..." required>
+        </div>
+
+        <div class="input-group">
+            <textarea id="descriptionInput" placeholder="説明を入力（オプション）..."></textarea>
+        </div>
+
+        <div class="input-group">
+            <button onclick="addTodo()">➕ 追加</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">合計</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="activeCount">0</div>
+                <div class="stat-label">未完了</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="completeCount">0</div>
+                <div class="stat-label">完了</div>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <button class="filter-btn active" onclick="filterTodos('all')">すべて</button>
+            <button class="filter-btn" onclick="filterTodos('active')">未完了</button>
+            <button class="filter-btn" onclick="filterTodos('completed')">完了</button>
+        </div>
+
+        <ul class="todo-list" id="todoList">
+            <li class="loading">読み込み中...</li>
+        </ul>
+    </div>
+
+    <script>
+        let allTodos = [];
+        let currentFilter = 'all';
+
+        // ページ読み込み時にTODO一覧を取得
+        document.addEventListener('DOMContentLoaded', loadTodos);
+
+        // Enterキーで追加
+        document.getElementById('titleInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTodo();
+            }
+        });
+
+        async function loadTodos() {
+            try {
+                const response = await fetch('/api/todos');
+                if (!response.ok) throw new Error('TODOの読み込みに失敗しました');
+                allTodos = await response.json();
+                displayTodos();
+                updateStats();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function addTodo() {
+            const titleInput = document.getElementById('titleInput');
+            const descriptionInput = document.getElementById('descriptionInput');
+            const title = titleInput.value.trim();
+            const description = descriptionInput.value.trim();
+
+            if (!title) {
+                showError('TODOのタイトルを入力してください');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/todos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        description: description
+                    })
+                });
+
+                if (!response.ok) throw new Error('TODOの追加に失敗しました');
+
+                const newTodo = await response.json();
+                allTodos.push(newTodo);
+                displayTodos();
+                updateStats();
+
+                titleInput.value = '';
+                descriptionInput.value = '';
+                showError('', false);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function toggleComplete(id) {
+            const todo = allTodos.find(t => t.id === id);
+            if (!todo) return;
+
+            try {
+                const response = await fetch(`/api/todos/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ...todo,
+                        completed: !todo.completed
+                    })
+                });
+
+                if (!response.ok) throw new Error('更新に失敗しました');
+
+                const updatedTodo = await response.json();
+                const index = allTodos.findIndex(t => t.id === id);
+                allTodos[index] = updatedTodo;
+                displayTodos();
+                updateStats();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function deleteTodo(id) {
+            if (!confirm('このTODOを削除してもいいですか？')) return;
+
+            try {
+                const response = await fetch(`/api/todos/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('削除に失敗しました');
+
+                allTodos = allTodos.filter(t => t.id !== id);
+                displayTodos();
+                updateStats();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function filterTodos(filter) {
+            currentFilter = filter;
+
+            // ボタンのアクティブ状態を更新
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            displayTodos();
+        }
+
+        function displayTodos() {
+            const todoList = document.getElementById('todoList');
+            let filtered = allTodos;
+
+            if (currentFilter === 'active') {
+                filtered = allTodos.filter(t => !t.completed);
+            } else if (currentFilter === 'completed') {
+                filtered = allTodos.filter(t => t.completed);
+            }
+
+            if (filtered.length === 0) {
+                todoList.innerHTML = '<li class="empty-message">TODOはありません</li>';
+                return;
+            }
+
+            todoList.innerHTML = filtered.map(todo => `
+                <li class="todo-item ${todo.completed ? 'completed' : ''}">
+                    <div class="todo-content">
+                        <div class="todo-title">${escapeHtml(todo.title)}</div>
+                        ${todo.description ? `<div class="todo-description">${escapeHtml(todo.description)}</div>` : ''}
+                        <div class="todo-date">${formatDate(todo.createdAt)}</div>
+                    </div>
+                    <div class="todo-actions">
+                        <button class="btn-complete" onclick="toggleComplete(${todo.id})">
+                            ${todo.completed ? '↩️ 未完了' : '✓ 完了'}
+                        </button>
+                        <button class="btn-delete" onclick="deleteTodo(${todo.id})">🗑️ 削除</button>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        function updateStats() {
+            const total = allTodos.length;
+            const active = allTodos.filter(t => !t.completed).length;
+            const completed = allTodos.filter(t => t.completed).length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('activeCount').textContent = active;
+            document.getElementById('completeCount').textContent = completed;
+        }
+
+        function showError(message, isError = true) {
+            const errorDiv = document.getElementById('error');
+            if (message && isError) {
+                errorDiv.textContent = '❌ ' + message;
+                errorDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
